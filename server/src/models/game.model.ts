@@ -1,30 +1,42 @@
-import DataTypes from 'sequelize';
-import sequelize from '../db';
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional  } from "sequelize";
+import sequelize from "../db";
 
-const Game = sequelize.define('Game', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-    board: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    get() {
-        return JSON.parse((this as any).getDataValue('board'));
-      },
-      set(val) {
-        (this as any).setDataValue('board', JSON.stringify(val));
+class Game extends Model<InferAttributes<Game>, InferCreationAttributes<Game>> {
+    declare id: CreationOptional<number>;
+    declare board: string;
+    declare currentPlayer: number;
+    declare winner: CreationOptional<number>;
+}
+
+Game.init(
+    {
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+        },
+        board: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            get() {
+                return JSON.parse(this.getDataValue("board"));
+            },
+            set(val) {
+                this.setDataValue("board", JSON.stringify(val));
+            }   
+        },
+        currentPlayer: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        winner: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        }
+    },
+    {
+        sequelize,
       }
-  },
-  current_player: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  winner: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-}, {});
+)
 
-export default Game
+export default Game;

@@ -14,18 +14,88 @@ function createBoard(dimensions: number) {
         board[i][j] = 0;
       }
     }
-    return board;
+    // Sequelize will serialize the board object into a string
+    return board as unknown as string;
   }
 
+  // New game
 router.post('/', async (_req: Request, res: Response) => {
   try {
     const board = createBoard(DIMENSIONS)
-    const game = await Game.create({ current_player: 1, board });
+    const game = await Game.create({ currentPlayer: 1, board });
     res.status(201).json(game);
   } catch (error) {
     console.error('Error creating game:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Retrieve existing game
+router.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const game = await Game.findByPk(req.params.id);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    res.json(game);
+  } catch (error) {
+    console.error(`Error getting game with ID ${req.params.id}:`, error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update current game
+router.post('/:id', async (req: Request, res: Response) => {
+  try {
+    const game = await Game.findByPk(req.params.id);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    const { currentPlayer, row, col, direction } = req.body;
+
+    if (currentPlayer !== game.currentPlayer) {
+      return res.status(400).json({ error: 'Invalid player' });
+    }
+
+    const board = JSON.parse(JSON.stringify(game.board));
+
+    // validate the move is valid
+    let left = 0;
+    let right = DIMENSIONS - 1;
+
+    while (board[row][left] !== 0 && left < DIMENSIONS - 1) {
+      left++;
+    }
+
+    while (board[row][right] !== 0 && right > 0) {
+      right--;
+    }
+
+    const isInvalidMove = (direction === 'left' && col !== left) || (direction === 'right' && col !== right);
+    if (isInvalidMove) {
+      return res.status(400).json({ error: 'Invalid move. No cheating!' });
+    } 
+
+    // update the board and player turn
+    const token = currentPlayer === 1 ? 1 : -1
+    board[row][col] = token;
+
+    game.board = board;
+    game.currentPlayer = currentPlayer === 1 ? 2 : 1;
+
+    await game.save();
+
+    res.json(game);
+  } catch (error) {
+    console.error(`Error updating game with ID ${req.params.id}:`, error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 export default router;
