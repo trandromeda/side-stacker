@@ -36,22 +36,22 @@ function App() {
     const [game, setGame] = useImmer<GameState>(initialGameState);
 
     /*
-    * Fetch our game
-    */
-    const { data, isLoading, isError } = useGameQuery({id: undefined});
+     * Fetch our game
+     */
+    const { data, isLoading, isError, refetch } = useGameQuery({ id: undefined });
     useEffect(() => {
-      if (data) {
-        setGame((draft) => {
-          draft.id = data.id;
-        });
-      }
-    }, [data?.id])
+        if (data) {
+            setGame((draft) => {
+                draft.id = data.id;
+            });
+        }
+    }, [data?.id]);
 
     if (isLoading) {
-      return <h2>Loading...</h2>
+        return <h2>Loading...</h2>;
     }
     if (isError) {
-      return <h2>Something went wrong!</h2>
+        return <h2>Something went wrong!</h2>;
     }
 
     const updateGame = async ({
@@ -63,6 +63,8 @@ function App() {
         col: number;
         direction: "L" | "R";
     }) => {
+        if (game.winner) return;
+
         let ENDPOINT = "http://localhost:9000/games";
 
         const payload = {
@@ -86,7 +88,7 @@ function App() {
             setBoard(updatedBoard);
             setGame((draft) => {
                 draft.currentPlayer = draft.currentPlayer === 1 ? 2 : 1;
-                draft.winner = updatedGame.winner
+                draft.winner = updatedGame.winner;
                 draft.winningPositions = updatedGame.winningPositions || [];
             });
         } catch (error) {
@@ -94,13 +96,28 @@ function App() {
         }
     };
 
+    const resetGame = () => {
+      setBoard(createBoard(DIMENSIONS));
+      setGame((draft) => {
+        draft.currentPlayer = 1;
+        draft.winner = undefined;
+        draft.winningPositions = undefined;
+      });
+      refetch();
+    }
 
     return (
         <div className="App">
             <div>
                 <h1>Side Stacker</h1>
-                {game.winner && <h1>Game Over! Player {game.winner} wins</h1>}
-                <p>It is currently player {game.currentPlayer}'s turn.</p>
+                {game.winner ? (
+                    <>
+                        <h1>Game Over! Player {game.winner} wins</h1>
+                        <button onClick={resetGame}>Play again?</button>
+                    </>
+                ) : (
+                    <p>It is currently player {game.currentPlayer}'s turn.</p>
+                )}
                 <BoardComponent
                     board={board}
                     updateBoard={updateGame}
