@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useImmer } from "use-immer";
 import BoardComponent from "./components/Board";
-import { checkHasWinner } from "./utils/check-winner";
 import { useGameQuery } from "./utils/gameQuery";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
@@ -47,20 +46,11 @@ function App() {
       }
     }, [data?.id])
 
-    // TODO: We can let the server handle this now
-    useEffect(() => {
-        const lastPlayer = game.currentPlayer === 1 ? 2 : 1;
-        const token = lastPlayer === 1 ? 1 : -1;
-        const hasWinner = checkHasWinner(board, token);
-        if (hasWinner) {
-            setGame((draft) => {
-                draft.winner = lastPlayer;
-            });
-        }
-    }, [board, game.currentPlayer]);
-
     if (isLoading) {
       return <h2>Loading...</h2>
+    }
+    if (isError) {
+      return <h2>Something went wrong!</h2>
     }
 
     const updateGame = async ({
@@ -72,7 +62,6 @@ function App() {
         col: number;
         direction: "L" | "R";
     }) => {
-        const token = game.currentPlayer === 1 ? 1 : -1;
         let ENDPOINT = "http://localhost:9000/games";
 
         const payload = {
@@ -90,12 +79,13 @@ function App() {
                 },
             });
 
-            const json = await response.json();
-            const updatedBoard = json.board;
+            const updatedGame = await response.json();
+            const updatedBoard = updatedGame.board;
 
             setBoard(updatedBoard);
             setGame((draft) => {
                 draft.currentPlayer = draft.currentPlayer === 1 ? 2 : 1;
+                draft.winner = updatedGame.winner
             });
         } catch (error) {
             console.error("Error fetching data:", error);

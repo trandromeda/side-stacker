@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import Game from '../models/game.model';
+import checkHasWinner from '../utils/check-winner';
 
 const router = Router();
 
@@ -84,6 +85,13 @@ router.post('/:id', async (req: Request, res: Response) => {
     const token = currentPlayer === 1 ? 1 : -1
     board[row][col] = token;
 
+    // check if there's a winner
+    let hasWinner = checkHasWinner(board, token);
+
+    if (hasWinner) {
+      game.winner = currentPlayer;
+    }
+    
     game.board = board;
     game.currentPlayer = currentPlayer === 1 ? 2 : 1;
 
