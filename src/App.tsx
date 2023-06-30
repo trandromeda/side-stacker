@@ -17,13 +17,14 @@ function createBoard(dimensions: number) {
   return board;
 }
 
+type Player = 1 | 2 | undefined;
 interface GameState {
-  playerTurn: 1 | 2;
-  isGameOver: boolean;
+  playerTurn: Player;
+  winner: Player;
 }
 const initialGameState: GameState = {
   playerTurn: 1,
-  isGameOver: false,
+  winner: undefined
 };
 
 function App() {
@@ -31,27 +32,33 @@ function App() {
   const [game, setGame] = useImmer<GameState>(initialGameState);
 
   const updateGame = ({ row, col }: { row: number; col: number }) => {
-    const value = game.playerTurn === 1 ? 1 : -1;
+    const token = game.playerTurn === 1 ? 1 : -1;
     setBoard((draft) => {
-      draft[row][col] = value;
+      draft[row][col] = token;
     });
+
     setGame((draft) => {
       draft.playerTurn = draft.playerTurn === 1 ? 2 : 1;
     });
   };
 
   useEffect(() => {
-    const lastPlayerToken = game.playerTurn === 1 ? -1 : 1;
-    const hasWinner = checkHasWinner(board, lastPlayerToken);
+    const lastPlayer = game.playerTurn === 1 ? 2 : 1;
+    const token = lastPlayer === 1 ? 1 : -1;
+    const hasWinner = checkHasWinner(board, token);
     if (hasWinner) {
-      console.log("winner winner chicken dinner!");
-    }
+        setGame((draft) => { 
+          draft.winner = lastPlayer
+        })
+      }
   }, [board, game.playerTurn]);
 
   return (
     <div className="App">
       <div>
         <h1>Side Stacker</h1>
+        {game.winner && <h1>Game Over! Player {game.winner} wins</h1>}
+        <p>It is currently player {game.playerTurn}'s turn.</p>
         <BoardComponent board={board} updateBoard={updateGame}></BoardComponent>
       </div>
     </div>
