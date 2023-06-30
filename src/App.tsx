@@ -33,16 +33,18 @@ function App() {
       let left = 0;
       let right = DIMENSIONS - 1;
 
-      if (direction === "L") {
-        while (draft[rowIndex][left] !== 0 && left < DIMENSIONS - 1) {
-          left++;
-        }
+      while (draft[rowIndex][left] !== 0 && left < DIMENSIONS - 1) {
+        left++;
+      }
+
+      while (draft[rowIndex][right] !== 0 && right > 0) {
+        right--;
+      }
+
+      if (direction === "L" && draft[rowIndex][left] === 0) {
         draft[rowIndex][left] = 1;
-      } else {
-        while (draft[rowIndex][right] !== 0 && right > 0) {
-          right--;
-        }
-        draft[rowIndex][right] = 1;
+      } else if (draft[rowIndex][right] === 0) {
+        draft[rowIndex][right] = 2;
       }
     });
   };
