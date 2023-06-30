@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useImmer } from "use-immer";
-import styled from "styled-components";
 import BoardComponent from "./components/Board";
+import { checkHasWinner } from "./utils/check-winner";
 
 type Board = Array<Array<number>>;
 const DIMENSIONS = 7;
@@ -39,6 +39,14 @@ function App() {
       draft.playerTurn = draft.playerTurn === 1 ? 2 : 1;
     });
   };
+
+  useEffect(() => {
+    const lastPlayerToken = game.playerTurn === 1 ? -1 : 1;
+    const hasWinner = checkHasWinner(board, lastPlayerToken);
+    if (hasWinner) {
+      console.log("winner winner chicken dinner!");
+    }
+  }, [board, game.playerTurn]);
 
   return (
     <div className="App">
