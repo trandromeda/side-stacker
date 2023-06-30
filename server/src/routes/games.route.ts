@@ -86,12 +86,13 @@ router.post('/:id', async (req: Request, res: Response) => {
     board[row][col] = token;
 
     // check if there's a winner
-    let hasWinner = checkHasWinner(board, token);
+    let winningPositions = checkHasWinner(board, token);
 
-    if (hasWinner) {
+    if (winningPositions.length > 0) {
       game.winner = currentPlayer;
+      game.winningPositions = winningPositions  as unknown as string;
     }
-    
+
     game.board = board;
     game.currentPlayer = currentPlayer === 1 ? 2 : 1;
 

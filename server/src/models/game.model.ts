@@ -1,4 +1,10 @@
-import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional  } from "sequelize";
+import {
+    DataTypes,
+    Model,
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional,
+} from "sequelize";
 import sequelize from "../db";
 
 class Game extends Model<InferAttributes<Game>, InferCreationAttributes<Game>> {
@@ -6,6 +12,7 @@ class Game extends Model<InferAttributes<Game>, InferCreationAttributes<Game>> {
     declare board: string;
     declare currentPlayer: number;
     declare winner: CreationOptional<number>;
+    declare winningPositions: CreationOptional<string>;
 }
 
 Game.init(
@@ -23,7 +30,7 @@ Game.init(
             },
             set(val) {
                 this.setDataValue("board", JSON.stringify(val));
-            }   
+            },
         },
         currentPlayer: {
             type: DataTypes.INTEGER,
@@ -32,11 +39,21 @@ Game.init(
         winner: {
             type: DataTypes.INTEGER,
             allowNull: true,
-        }
+        },
+        winningPositions: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            get() {
+                return JSON.parse(this.getDataValue("winningPositions"));
+            },
+            set(val) {
+                this.setDataValue("winningPositions", JSON.stringify(val));
+            },
+        },
     },
     {
         sequelize,
-      }
-)
+    }
+);
 
 export default Game;

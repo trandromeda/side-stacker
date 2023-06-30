@@ -8,6 +8,11 @@ const Row = styled.div`
     max-width: 500px;
 `;
 
+const Column = styled.div<{$isWinning?: boolean}>`
+color: ${(props) => (props.$isWinning ? "red" : "black")};
+font-weight: ${(props) => (props.$isWinning ? 700 : 400)};
+`
+
 const DIMENSIONS = 7;
 
 interface BoardProps {
@@ -21,9 +26,10 @@ interface BoardProps {
         col: number;
         direction: "L" | "R";
     }) => void;
+    winningPositions?: Array<[number, number]>;
 }
 
-function Board({ board, updateBoard }: BoardProps) {
+function Board({ board, updateBoard, winningPositions }: BoardProps) {
     const handleClick = (rowIndex: number, direction: "L" | "R") => {
         let left = 0;
         let right = DIMENSIONS - 1;
@@ -52,15 +58,17 @@ function Board({ board, updateBoard }: BoardProps) {
     };
     return (
         <div>
-            {board.map((row, index) => (
-                <Row key={index}>
-                    <button onClick={() => handleClick(index, "L")}>+</button>
-                    {row.map((column, index) => (
-                        <div className="column" key={index}>
+            {board.map((row, rowIndex) => (
+                <Row key={rowIndex}>
+                    <button onClick={() => handleClick(rowIndex, "L")}>+</button>
+                    {row.map((column, colIndex) => {
+                        const isWinning = winningPositions?.some(([row, col]) => row === rowIndex && col === colIndex);
+                        return (<Column $isWinning={isWinning} key={colIndex}>
                             {column === 1 ? "X" : column === -1 ? "O" : "_"}
-                        </div>
-                    ))}
-                    <button onClick={() => handleClick(index, "R")}>+</button>
+                        </Column>)
+                    }
+                    )}
+                    <button onClick={() => handleClick(rowIndex, "R")}>+</button>
                 </Row>
             ))}
         </div>

@@ -5,7 +5,7 @@ import cors from 'cors';
 import sequelize from './db';
 import Game from './models/game.model';
 import gamesRouter from './routes/games.route';
-import { port } from './server';
+import { port } from '.';
 
 export default async function startServer(app: Express) {
   // Sync models with database

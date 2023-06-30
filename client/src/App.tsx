@@ -23,6 +23,7 @@ interface GameState {
     id: number;
     currentPlayer: Player;
     winner: Player;
+    winningPositions?: Array<[number, number]>;
 }
 const initialGameState: GameState = {
     id: 1,
@@ -86,6 +87,7 @@ function App() {
             setGame((draft) => {
                 draft.currentPlayer = draft.currentPlayer === 1 ? 2 : 1;
                 draft.winner = updatedGame.winner
+                draft.winningPositions = updatedGame.winningPositions || [];
             });
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -102,6 +104,7 @@ function App() {
                 <BoardComponent
                     board={board}
                     updateBoard={updateGame}
+                    winningPositions={game.winningPositions}
                 ></BoardComponent>
             </div>
             <ReactQueryDevtools initialIsOpen={true} />
