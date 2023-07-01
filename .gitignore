@@ -6,14 +6,16 @@ client/node_modules
 server/node_modules
 /.pnp
 .pnp.js
-/server/.env
+server/src/.env
 
 # testing
 /coverage
 
 # production
-/build
-/server/dist
+build
+server/dist
+db
+client/build
 
 # misc
 .DS_Store

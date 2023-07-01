@@ -1,0 +1,38 @@
+version: '3'
+services:
+  db:
+    container_name: side-stacker-db
+    image: postgres:14.7
+    environment:
+      POSTGRES_USER: me
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: side_stacker
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+  server:
+    container_name: side-stacker-server
+    env_file:
+      "server/src/.env"
+    environment:
+      PSQL_HOST: db
+    build:
+      context: ./server
+      dockerfile: ./Dockerfile
+    image: "trandromeda/side-stacker:server"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    depends_on:
+      - db
+  client:
+    container_name: side-stacker-client
+    build:
+      context: ./client
+      dockerfile: ./Dockerfile
+    image: "trandromeda/side-stacker:client"
+    ports:
+      - 3000:3000
+volumes:
+  db_data: {}

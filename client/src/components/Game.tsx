@@ -47,7 +47,7 @@ function Game({ id, gamesPlayed, isSinglePlayer }: GameProps) {
             setPlayer(playerId)
 
         }
-    }, [data, id]);
+    }, [data, id, setGame]);
 
     // Sync local state with socket event i.e other player's move
     useEffect(() => {
@@ -64,7 +64,7 @@ function Game({ id, gamesPlayed, isSinglePlayer }: GameProps) {
         return () => {
             socket.off("game-updated");
         };
-    }, []);
+    }, [setGame]);
 
     if (isLoading) {
         return <p>Loading...</p>;
