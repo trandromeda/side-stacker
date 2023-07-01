@@ -6,10 +6,12 @@ function App() {
     const [gameId, setGameId] = useState<number | undefined>(undefined);
     const [hasStarted, setHasStarted] = useState<boolean>(false);
     const [gamesPlayed, setGamesPlayed] = useState<number>(0);
+    const [isSinglePlayer, setIsSinglePlayer] = useState(false);
+
 
     const handleNewGame = () => {
-        setGameId(undefined)
-        setGamesPlayed(gp => gp + 1)
+        setGameId(undefined);
+        setGamesPlayed((gp) => gp + 1);
         setHasStarted(true);
     };
 
@@ -26,13 +28,21 @@ function App() {
             <div>
                 <button onClick={handleNewGame}>New game</button>
 
-                <button>Join game</button>
                 <form onSubmit={(event) => handleJoinGame(event)}>
                     <input type="text" id="room"></input>
                     <button type="submit">Join game</button>
                 </form>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        checked={isSinglePlayer}
+                        onChange={() => setIsSinglePlayer(!isSinglePlayer)}
+                    />
+                    Single player mode
+                </label>
             </div>
-            {hasStarted && <Game id={gameId} gamesPlayed={gamesPlayed} />}
+            {hasStarted && <Game id={gameId} gamesPlayed={gamesPlayed} isSinglePlayer={isSinglePlayer} />}
             <ReactQueryDevtools initialIsOpen={true} />
         </div>
     );

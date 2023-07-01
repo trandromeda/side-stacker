@@ -11,6 +11,7 @@ import { ENDPOINT, useGameQuery } from "../utils/gameQuery";
 interface GameProps {
     id?: number;
     gamesPlayed: number;
+    isSinglePlayer: boolean;
 }
 
 const DIMENSIONS = 7;
@@ -22,7 +23,7 @@ const initialGameState: GameState = {
 };
 const socket = io("http://localhost:9001");
 
-function Game({ id, gamesPlayed }: GameProps) {
+function Game({ id, gamesPlayed, isSinglePlayer }: GameProps) {
     const [board, setBoard] = useState<Board>(createBoard(DIMENSIONS));
     const [game, setGame] = useImmer<GameState>(initialGameState);
     const [player, setPlayer] = useState<Player>(undefined);
@@ -105,10 +106,10 @@ function Game({ id, gamesPlayed }: GameProps) {
 
     return (
         <>
-            <Dashboard game={game} player={player} />
+            <Dashboard game={game} player={player} isSinglePlayer={isSinglePlayer} />
             <BoardComponent
                 board={board}
-                isCurrentTurn={game.currentPlayer === player}
+                isCurrentTurn={game.currentPlayer === player || isSinglePlayer}
                 handlePlayerTurn={handlePlayerTurn}
                 winningPositions={game.winningPositions}
             ></BoardComponent>

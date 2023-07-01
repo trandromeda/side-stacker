@@ -3,9 +3,10 @@ import { GameState, Player } from "../types/game.types";
 interface DashboardProps {
     game: GameState;
     player: Player;
+    isSinglePlayer: boolean;
 }
 
-function Dashboard({ game, player }: DashboardProps) {
+function Dashboard({ game, player, isSinglePlayer }: DashboardProps) {
     return (
         <>
             <h3>Room: {game.id}</h3>
@@ -16,7 +17,7 @@ function Dashboard({ game, player }: DashboardProps) {
                 </>
             ) : (
                 <div>
-                    <p>You are player {player}.</p>
+                    {!isSinglePlayer && <p>You are player {player}.</p>}
                     <p>It is currently player {game.currentPlayer}'s turn.</p>
                 </div>
             )}
