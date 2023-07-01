@@ -35,5 +35,7 @@ services:
     image: "trandromeda/side-stacker:client"
     ports:
       - 3000:3000
+    depends_on:
+      - server
 volumes:
   db_data: {}
