@@ -3,6 +3,7 @@ import { useImmer } from "use-immer";
 import BoardComponent from "./components/Board";
 import { useGameQuery } from "./utils/gameQuery";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { io } from "socket.io-client";
 
 type Board = Array<Array<number>>;
 const DIMENSIONS = 7;
@@ -31,6 +32,8 @@ const initialGameState: GameState = {
     winner: undefined,
 };
 
+const socket = io("http://localhost:9000");
+
 function App() {
     const [board, setBoard] = useState<Board>(createBoard(DIMENSIONS));
     const [game, setGame] = useImmer<GameState>(initialGameState);
@@ -38,7 +41,9 @@ function App() {
     /*
      * Fetch our game
      */
-    const { data, isLoading, isError, refetch } = useGameQuery({ id: undefined });
+    const { data, isLoading, isError, refetch } = useGameQuery({
+        id: undefined,
+    });
     useEffect(() => {
         if (data) {
             setGame((draft) => {
@@ -46,6 +51,18 @@ function App() {
             });
         }
     }, [data?.id]);
+
+    useEffect(() => {
+        socket.on("connect", () => console.log(socket.id));
+        socket.on("move", (payload) => {
+            // setGame(payload);
+            console.log("move event");
+        });
+
+        return () => {
+            socket.off("move");
+        };
+    }, []);
 
     if (isLoading) {
         return <h2>Loading...</h2>;
@@ -97,14 +114,14 @@ function App() {
     };
 
     const resetGame = () => {
-      setBoard(createBoard(DIMENSIONS));
-      setGame((draft) => {
-        draft.currentPlayer = 1;
-        draft.winner = undefined;
-        draft.winningPositions = undefined;
-      });
-      refetch();
-    }
+        setBoard(createBoard(DIMENSIONS));
+        setGame((draft) => {
+            draft.currentPlayer = 1;
+            draft.winner = undefined;
+            draft.winningPositions = undefined;
+        });
+        refetch();
+    };
 
     return (
         <div className="App">
