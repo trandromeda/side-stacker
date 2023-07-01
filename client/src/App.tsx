@@ -55,7 +55,7 @@ function App() {
                             checked={isSinglePlayer}
                             onChange={() => setIsSinglePlayer(!isSinglePlayer)}
                         />
-                        Single player mode
+                        Couch co-op mode
                     </label>
                 )}
             </Options>
