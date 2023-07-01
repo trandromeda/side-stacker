@@ -1,18 +1,17 @@
 import express from 'express';
-import startServer from './startServer';
+import startServer from './startServer.js';
 import { Server } from 'socket.io';
+import http from 'http';
 
 const app = express();
 export const port = 9000;
-
-startServer(app).then((server) => {
-  const io = new Server(server, { 
+export const io = new Server(http.createServer(app), {
     cors: {
       origin: "http://localhost:3000"
     }
-})
-
-  io.on('connection', (socket) => {
+});
+io.listen(9001);
+io.on('connection', (socket) => {
     console.log('Client connected');
 
     // Handle socket events here
@@ -21,6 +20,8 @@ startServer(app).then((server) => {
       console.log('Client disconnected');
     });
   });
+
+startServer(app).then((_server) => {
 
   console.log(`Server is running on http://localhost:${port}`);
 });

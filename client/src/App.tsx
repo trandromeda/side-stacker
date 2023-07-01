@@ -32,7 +32,7 @@ const initialGameState: GameState = {
     winner: undefined,
 };
 
-const socket = io("http://localhost:9000");
+const socket = io("http://localhost:9001");
 
 function App() {
     const [board, setBoard] = useState<Board>(createBoard(DIMENSIONS));
@@ -54,9 +54,9 @@ function App() {
 
     useEffect(() => {
         socket.on("connect", () => console.log(socket.id));
-        socket.on("move", (payload) => {
+        socket.on("game-updated", (payload) => {
             // setGame(payload);
-            console.log("move event");
+            console.log(payload);
         });
 
         return () => {

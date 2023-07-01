@@ -5,7 +5,7 @@ import {
     InferCreationAttributes,
     CreationOptional,
 } from "sequelize";
-import sequelize from "../db";
+import sequelize from "../db.js";
 
 class Game extends Model<InferAttributes<Game>, InferCreationAttributes<Game>> {
     declare id: CreationOptional<number>;

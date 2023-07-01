@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
-import Game from '../models/game.model';
-import checkHasWinner from '../utils/check-winner';
+import Game from '../models/game.model.js';
+import checkHasWinner from '../utils/check-winner.js';
+import { io } from '../index.js';
 
 const router = Router();
 
@@ -96,6 +97,7 @@ router.post('/:id', async (req: Request, res: Response) => {
     game.board = board;
     game.currentPlayer = currentPlayer === 1 ? 2 : 1;
 
+    io.emit('game-updated', game);
     await game.save();
 
     res.json(game);
