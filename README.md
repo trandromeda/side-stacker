@@ -13,3 +13,7 @@ You can either run this game locally or via Docker (recommended).
 ### Docker
 
 From the root directory, run `docker compose build` and then `docker compose up`. Visit `localhost:3000`.
+
+Have fun!
+
+<img width="881" alt="Screenshot 2023-07-01 at 5 25 37 PM" src="https://github.com/trandromeda/side-stacker/assets/8782432/40195aa9-41a3-4854-95ae-9ef8dcc0ec50">
