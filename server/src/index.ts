@@ -14,14 +14,11 @@ io.listen(9001);
 io.on('connection', (socket) => {
     console.log('Client connected');
 
-    // Handle socket events here
-
     socket.on('disconnect', () => {
       console.log('Client disconnected');
     });
   });
 
 startServer(app).then((_server) => {
-
   console.log(`Server is running on http://localhost:${port}`);
 });

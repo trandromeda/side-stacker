@@ -17,7 +17,7 @@ const DIMENSIONS = 7;
 
 interface BoardProps {
     board: Array<Array<number>>;
-    updateBoard: ({
+    handlePlayerTurn: ({
         row,
         col,
         direction,
@@ -27,10 +27,13 @@ interface BoardProps {
         direction: "L" | "R";
     }) => void;
     winningPositions?: Array<[number, number]>;
+    isCurrentTurn: boolean;
 }
 
-function Board({ board, updateBoard, winningPositions }: BoardProps) {
+function Board({ board, handlePlayerTurn, winningPositions, isCurrentTurn }: BoardProps) {
     const handleClick = (rowIndex: number, direction: "L" | "R") => {
+        if (!isCurrentTurn) return;
+
         let left = 0;
         let right = DIMENSIONS - 1;
 
@@ -43,13 +46,13 @@ function Board({ board, updateBoard, winningPositions }: BoardProps) {
         }
 
         if (direction === "L" && board[rowIndex][left] === 0) {
-            updateBoard({
+            handlePlayerTurn({
                 row: rowIndex,
                 col: left,
                 direction,
             });
         } else if (board[rowIndex][right] === 0) {
-            updateBoard({
+            handlePlayerTurn({
                 row: rowIndex,
                 col: right,
                 direction,
@@ -58,9 +61,9 @@ function Board({ board, updateBoard, winningPositions }: BoardProps) {
     };
     return (
         <div>
-            {board.map((row, rowIndex) => (
+            {board && board.map((row, rowIndex) => (
                 <Row key={rowIndex}>
-                    <button onClick={() => handleClick(rowIndex, "L")}>+</button>
+                    <button disabled={!isCurrentTurn} onClick={() => handleClick(rowIndex, "L")}>+</button>
                     {row.map((column, colIndex) => {
                         const isWinning = winningPositions?.some(([row, col]) => row === rowIndex && col === colIndex);
                         return (<Column $isWinning={isWinning} key={colIndex}>
@@ -68,7 +71,7 @@ function Board({ board, updateBoard, winningPositions }: BoardProps) {
                         </Column>)
                     }
                     )}
-                    <button onClick={() => handleClick(rowIndex, "R")}>+</button>
+                    <button disabled={!isCurrentTurn} onClick={() => handleClick(rowIndex, "R")}>+</button>
                 </Row>
             ))}
         </div>

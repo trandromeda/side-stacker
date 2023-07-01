@@ -17,6 +17,7 @@ const DIMENSIONS = 7;
 const initialGameState: GameState = {
     id: undefined,
     currentPlayer: 1,
+    players: [],
     winner: undefined,
 };
 const socket = io("http://localhost:9001");
@@ -41,14 +42,22 @@ function Game({ id, gamesPlayed }: GameProps) {
                 draft.winningPositions = data.winningPositions;
                 draft.currentPlayer = data.currentPlayer;
             });
+            const playerId = data.players.length === 1 ? 1 : 2
+            setPlayer(playerId)
+
         }
     }, [data, id]);
 
     // Sync local state with socket event i.e other player's move
     useEffect(() => {
-        socket.on("connect", () => console.log(socket.id));
+        socket.on("connect", () => console.log('Connected to: ' + socket.id));
         socket.on("game-updated", (payload: GameState & { board: Board }) => {
-            // setGame(payload);
+            setBoard(payload.board)
+            setGame((draft) => {
+                draft.currentPlayer = payload.currentPlayer;
+                draft.winner = payload.winner;
+                draft.winningPositions = payload.winningPositions;
+            })
         });
 
         return () => {
@@ -64,7 +73,7 @@ function Game({ id, gamesPlayed }: GameProps) {
         return <p>Error!</p>;
     }
 
-    const updateGame = async ({
+    const handlePlayerTurn = async ({
         row,
         col,
         direction,
@@ -82,22 +91,12 @@ function Game({ id, gamesPlayed }: GameProps) {
             direction,
         };
         try {
-            const response = await fetch(`${ENDPOINT}/${game.id}`, {
+            await fetch(`${ENDPOINT}/${game.id}`, {
                 method: "POST",
                 body: JSON.stringify(payload),
                 headers: {
                     "Content-Type": "application/json",
                 },
-            });
-
-            const updatedGame = await response.json();
-            const updatedBoard = updatedGame.board;
-
-            setBoard(updatedBoard);
-            setGame((draft) => {
-                draft.currentPlayer = draft.currentPlayer === 1 ? 2 : 1;
-                draft.winner = updatedGame.winner;
-                draft.winningPositions = updatedGame.winningPositions || [];
             });
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -106,10 +105,11 @@ function Game({ id, gamesPlayed }: GameProps) {
 
     return (
         <>
-            <Dashboard game={game} />
+            <Dashboard game={game} player={player} />
             <BoardComponent
                 board={board}
-                updateBoard={updateGame}
+                isCurrentTurn={game.currentPlayer === player}
+                handlePlayerTurn={handlePlayerTurn}
                 winningPositions={game.winningPositions}
             ></BoardComponent>
         </>

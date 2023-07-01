@@ -11,6 +11,7 @@ class Game extends Model<InferAttributes<Game>, InferCreationAttributes<Game>> {
     declare id: CreationOptional<number>;
     declare board: string;
     declare currentPlayer: number;
+    declare players: CreationOptional<string>;
     declare winner: CreationOptional<number>;
     declare winningPositions: CreationOptional<string>;
 }
@@ -35,6 +36,15 @@ Game.init(
         currentPlayer: {
             type: DataTypes.INTEGER,
             allowNull: false,
+        },
+        players: {
+            type: DataTypes.TEXT,
+            get() {
+                return JSON.parse(this.getDataValue("players"));
+            },
+            set(val) {
+                this.setDataValue("players", JSON.stringify(val));
+            },
         },
         winner: {
             type: DataTypes.INTEGER,
