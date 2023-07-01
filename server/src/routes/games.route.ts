@@ -97,9 +97,10 @@ router.post('/:id', async (req: Request, res: Response) => {
     game.board = board;
     game.currentPlayer = currentPlayer === 1 ? 2 : 1;
 
-    io.emit('game-updated', game);
     await game.save();
 
+    // notify other player
+    io.emit('game-updated', game);
     res.json(game);
   } catch (error) {
     console.error(`Error updating game with ID ${req.params.id}:`, error);

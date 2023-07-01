@@ -1,22 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 
-interface GameQueryParams {
-    id?: number;
-}
+export let ENDPOINT = "http://localhost:9000/games";
 
-export function useGameQuery({id}: GameQueryParams) {
-    let ENDPOINT = "http://localhost:9000/games";
+export function useGameQuery(gamesPlayed: number, id?: number) {
+    let METHOD = "POST";
+    if (id) {
+        ENDPOINT += `/${id}`;
+        METHOD = "GET";
+    }
 
     return useQuery({
         queryKey: [
-            "game",
-            {
-                id,
-            },
+            "game", id, gamesPlayed
         ],
         queryFn: () =>
             fetch(ENDPOINT, {
-                method: "POST",
+                method: METHOD,
                 headers: {
                     "Content-Type": "application/json",
                 },
