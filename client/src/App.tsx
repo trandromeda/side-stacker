@@ -1,13 +1,28 @@
 import { useState } from "react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import styled from "styled-components";
 import Game from "./components/Game";
+
+const Wrapper = styled.div`
+    padding: 2em;
+`;
+
+const Title = styled.h1`
+    text-align: center;
+`;
+
+const Options = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    grid-gap: 0.5em;
+`;
 
 function App() {
     const [gameId, setGameId] = useState<number | undefined>(undefined);
     const [hasStarted, setHasStarted] = useState<boolean>(false);
     const [gamesPlayed, setGamesPlayed] = useState<number>(0);
     const [isSinglePlayer, setIsSinglePlayer] = useState(false);
-
 
     const handleNewGame = () => {
         setGameId(undefined);
@@ -23,28 +38,36 @@ function App() {
     };
 
     return (
-        <div>
-            <h1>Side Stacker</h1>
-            <div>
+        <Wrapper>
+            <Title>Totally-Not-Connect-Four</Title>
+            <Options>
                 <button onClick={handleNewGame}>New game</button>
 
                 <form onSubmit={(event) => handleJoinGame(event)}>
-                    <input type="text" id="room"></input>
+                    <input type="text" id="room" placeholder="Enter ID"></input>
                     <button type="submit">Join game</button>
                 </form>
 
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={isSinglePlayer}
-                        onChange={() => setIsSinglePlayer(!isSinglePlayer)}
-                    />
-                    Single player mode
-                </label>
-            </div>
-            {hasStarted && <Game id={gameId} gamesPlayed={gamesPlayed} isSinglePlayer={isSinglePlayer} />}
+                {!hasStarted && (
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={isSinglePlayer}
+                            onChange={() => setIsSinglePlayer(!isSinglePlayer)}
+                        />
+                        Single player mode
+                    </label>
+                )}
+            </Options>
+            {hasStarted && (
+                <Game
+                    id={gameId}
+                    gamesPlayed={gamesPlayed}
+                    isSinglePlayer={isSinglePlayer}
+                />
+            )}
             <ReactQueryDevtools initialIsOpen={true} />
-        </div>
+        </Wrapper>
     );
 }
 

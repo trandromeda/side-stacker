@@ -1,17 +1,42 @@
 import styled from "styled-components";
 
+const BoardComponent = styled.div``;
+
 const Row = styled.div`
+    background-color: #495ceb;
     display: flex;
-    justify-content: space-evenly;
-    grid-gap: 1em;
+    justify-content: space-between;
     margin: 0 auto;
-    max-width: 500px;
+    max-width: 520px;
 `;
 
-const Column = styled.div<{$isWinning?: boolean}>`
-color: ${(props) => (props.$isWinning ? "red" : "black")};
-font-weight: ${(props) => (props.$isWinning ? 700 : 400)};
-`
+const Column = styled.div<{
+    $isWinning?: boolean;
+    $isPlayerOne?: boolean;
+    $isPlayerTwo?: boolean;
+}>`
+    width: 50px;
+    height: 50px;
+    margin: 5px;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #000000;
+    font-weight: ${(props) => (props.$isWinning ? 700 : 400)};
+    border-radius: 50%;
+    background-color: #fff;
+    background-color: ${(props) => props.$isPlayerOne && "red"};
+    background-color: ${(props) => props.$isPlayerTwo && "yellow"};
+    &:after {
+        content: ${(props) => (props.$isWinning ? "'V'" : "''")};
+        font-size: 16px;
+    }
+`;
+
+const Button = styled.button<{ $isHidden: boolean }>`
+    visibility: ${(props) => (props.$isHidden ? "hidden" : "visible")};
+`;
 
 const DIMENSIONS = 7;
 
@@ -30,7 +55,12 @@ interface BoardProps {
     isCurrentTurn: boolean;
 }
 
-function Board({ board, handlePlayerTurn, winningPositions, isCurrentTurn }: BoardProps) {
+function Board({
+    board,
+    handlePlayerTurn,
+    winningPositions,
+    isCurrentTurn,
+}: BoardProps) {
     const handleClick = (rowIndex: number, direction: "L" | "R") => {
         if (!isCurrentTurn) return;
 
@@ -60,21 +90,39 @@ function Board({ board, handlePlayerTurn, winningPositions, isCurrentTurn }: Boa
         }
     };
     return (
-        <div>
-            {board && board.map((row, rowIndex) => (
-                <Row key={rowIndex}>
-                    <button disabled={!isCurrentTurn} onClick={() => handleClick(rowIndex, "L")}>+</button>
-                    {row.map((column, colIndex) => {
-                        const isWinning = winningPositions?.some(([row, col]) => row === rowIndex && col === colIndex);
-                        return (<Column $isWinning={isWinning} key={colIndex}>
-                            {column === 1 ? "X" : column === -1 ? "O" : "_"}
-                        </Column>)
-                    }
-                    )}
-                    <button disabled={!isCurrentTurn} onClick={() => handleClick(rowIndex, "R")}>+</button>
-                </Row>
-            ))}
-        </div>
+        <BoardComponent>
+            {board &&
+                board.map((row, rowIndex) => (
+                    <Row key={rowIndex}>
+                        <Button
+                            $isHidden={!isCurrentTurn}
+                            onClick={() => handleClick(rowIndex, "L")}
+                        >
+                            +
+                        </Button>
+                        {row.map((column, colIndex) => {
+                            const isWinning = winningPositions?.some(
+                                ([row, col]) =>
+                                    row === rowIndex && col === colIndex
+                            );
+                            return (
+                                <Column
+                                    $isWinning={isWinning}
+                                    $isPlayerOne={column === 1}
+                                    $isPlayerTwo={column === -1}
+                                    key={colIndex}
+                                ></Column>
+                            );
+                        })}
+                        <Button
+                            $isHidden={!isCurrentTurn}
+                            onClick={() => handleClick(rowIndex, "R")}
+                        >
+                            +
+                        </Button>
+                    </Row>
+                ))}
+        </BoardComponent>
     );
 }
 
