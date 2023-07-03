@@ -16,4 +16,5 @@ From the root directory, run `docker compose build` and then `docker compose up`
 
 Have fun!
 
-<img width="881" alt="Screenshot 2023-07-01 at 5 25 37 PM" src="https://github.com/trandromeda/side-stacker/assets/8782432/40195aa9-41a3-4854-95ae-9ef8dcc0ec50">
+<img width="881" alt="side stacker screenshot" src="https://github.com/trandromeda/side-stacker/assets/8782432/f7810e32-9988-4732-b6bc-ace771e347b6">
+
