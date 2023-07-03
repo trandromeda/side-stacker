@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { useImmer } from "use-immer";
+import styled from "styled-components";
 
 import Dashboard from "./Dashboard";
 import BoardComponent from "./Board";
@@ -23,10 +24,16 @@ const initialGameState: GameState = {
 };
 const socket = io("http://localhost:9001");
 
+const ErrorMessage = styled.p`
+    text-align: center;
+    color: red;
+`;
+
 function Game({ id, gamesPlayed, isSinglePlayer }: GameProps) {
     const [board, setBoard] = useState<Board>(createBoard(DIMENSIONS));
     const [game, setGame] = useImmer<GameState>(initialGameState);
     const [player, setPlayer] = useState<Player>(undefined);
+    const [error, setError] = useState("");
 
     /*
      * Fetch game
@@ -36,29 +43,28 @@ function Game({ id, gamesPlayed, isSinglePlayer }: GameProps) {
     // Sync local state with server state
     useEffect(() => {
         if (data) {
-            setBoard(data.board)
+            setBoard(data.board);
             setGame((draft) => {
                 draft.id = data.id;
                 draft.winner = data.winner;
                 draft.winningPositions = data.winningPositions;
                 draft.currentPlayer = data.currentPlayer;
             });
-            const playerId = data.players.length === 1 ? 1 : 2
-            setPlayer(playerId)
-
+            const playerId = data.players.length === 1 ? 1 : 2;
+            setPlayer(playerId);
         }
     }, [data, id, setGame]);
 
     // Sync local state with socket event i.e other player's move
     useEffect(() => {
-        socket.on("connect", () => console.log('Connected to: ' + socket.id));
+        socket.on("connect", () => console.log("Connected to: " + socket.id));
         socket.on("game-updated", (payload: GameState & { board: Board }) => {
-            setBoard(payload.board)
+            setBoard(payload.board);
             setGame((draft) => {
                 draft.currentPlayer = payload.currentPlayer;
                 draft.winner = payload.winner;
                 draft.winningPositions = payload.winningPositions;
-            })
+            });
         });
 
         return () => {
@@ -71,7 +77,11 @@ function Game({ id, gamesPlayed, isSinglePlayer }: GameProps) {
     }
 
     if (isError) {
-        return <p>Error!</p>;
+        return (
+            <p>
+                Sorry, something went wrong loading the game. Please try again.
+            </p>
+        );
     }
 
     const handlePlayerTurn = async ({
@@ -92,21 +102,32 @@ function Game({ id, gamesPlayed, isSinglePlayer }: GameProps) {
             direction,
         };
         try {
-            await fetch(`${ENDPOINT}/${game.id}`, {
+            const response = await fetch(`${ENDPOINT}/${game.id}`, {
                 method: "POST",
                 body: JSON.stringify(payload),
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
-        } catch (error) {
-            console.error("Error fetching data:", error);
+            if (!response.ok) {
+                const errorResponse: { error: string } = await response.json();
+                const message = errorResponse.error;
+                throw new Error(message);
+            }
+        } catch (e) {
+            setError((e as any).message);
+            console.error("Error updating game:", e);
         }
     };
 
     return (
         <>
-            <Dashboard game={game} player={player} isSinglePlayer={isSinglePlayer} />
+            <Dashboard
+                game={game}
+                player={player}
+                isSinglePlayer={isSinglePlayer}
+            />
+            {error && <ErrorMessage>{error}</ErrorMessage>}
             <BoardComponent
                 board={board}
                 isCurrentTurn={game.currentPlayer === player || isSinglePlayer}
