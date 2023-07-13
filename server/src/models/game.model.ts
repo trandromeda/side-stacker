@@ -9,11 +9,14 @@ import sequelize from "../db.js";
 
 class Game extends Model<InferAttributes<Game>, InferCreationAttributes<Game>> {
     declare id: CreationOptional<number>;
-    declare board: string;
     declare currentPlayer: number;
-    declare players: CreationOptional<string>;
+    declare players: CreationOptional<number[]>;
     declare winner: CreationOptional<number>;
     declare winningPositions: CreationOptional<string>;
+    declare moves: CreationOptional<{ 
+        player: number,
+        move: [number, number]
+    }[]>
 }
 
 Game.init(
@@ -23,42 +26,24 @@ Game.init(
             autoIncrement: true,
             primaryKey: true,
         },
-        board: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-            get() {
-                return JSON.parse(this.getDataValue("board"));
-            },
-            set(val) {
-                this.setDataValue("board", JSON.stringify(val));
-            },
+        moves: {
+            type: DataTypes.ARRAY(DataTypes.JSON),
+            allowNull: true,
         },
         currentPlayer: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
         players: {
-            type: DataTypes.TEXT,
-            get() {
-                return JSON.parse(this.getDataValue("players"));
-            },
-            set(val) {
-                this.setDataValue("players", JSON.stringify(val));
-            },
+            type: DataTypes.ARRAY(DataTypes.INTEGER)
         },
         winner: {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
         winningPositions: {
-            type: DataTypes.TEXT,
+            type: DataTypes.ARRAY(DataTypes.ARRAY(DataTypes.INTEGER)),
             allowNull: true,
-            get() {
-                return JSON.parse(this.getDataValue("winningPositions"));
-            },
-            set(val) {
-                this.setDataValue("winningPositions", JSON.stringify(val));
-            },
         },
     },
     {
