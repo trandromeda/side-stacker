@@ -11,10 +11,13 @@ type Board = Array<Array<number>>;
 // New game
 router.post("/", async (_req: Request, res: Response) => {
     try {
-        const board = createBoard(DIMENSIONS);
-        const players = [1] as unknown as string;
-        const game = await Game.create({ currentPlayer: 1, players, board });
-        res.status(201).json(game);
+        const board = createBoard(DIMENSIONS, []);
+        const players = [1];
+        const game = await Game.create({ currentPlayer: 1, players });
+        res.status(201).json({
+            ...game.toJSON(),
+            board
+        });
     } catch (error) {
         console.error("Error creating game:", error);
         res.status(500).json({ error: "Internal server error" });
@@ -33,10 +36,14 @@ router.get("/:id", async (req: Request, res: Response) => {
         if (game.players.length === 2) {
             return res.status(400).json({ error: "Game is full" });
         } else if (game.players.length === 1) {
-            game.players = JSON.stringify([1, 2]);
+            game.players = [1,2]
         }
+        const board = createBoard(DIMENSIONS, game.moves);
 
-        res.json(game);
+        res.json({
+            ...game.toJSON(),
+            board
+        });
     } catch (error) {
         console.error(`Error getting game with ID ${req.params.id}:`, error);
         res.status(500).json({ error: "Internal server error" });
@@ -53,9 +60,16 @@ router.post("/:id", async (req: Request, res: Response) => {
         }
 
         const { currentPlayer, row, col, direction } = req.body;
-        const board = JSON.parse(JSON.stringify(game.board));
+        const board = createBoard(DIMENSIONS, game.moves || []);
 
-        const error = checkIsInvalid(game, board, currentPlayer, row, col, direction);
+        const error = checkIsInvalid(
+            game,
+            board,
+            currentPlayer,
+            row,
+            col,
+            direction
+        );
 
         if (error) {
             return res.status(400).json(error);
@@ -73,30 +87,58 @@ router.post("/:id", async (req: Request, res: Response) => {
             game.winningPositions = winningPositions as unknown as string;
         }
 
-        game.board = board;
         game.currentPlayer = currentPlayer === 1 ? 2 : 1;
+
+        // save move history
+        const move: Move = {
+            player: currentPlayer,
+            move: [row, col]
+        }
+        const moves = game.moves || []
+        const mergedMoves = moves.concat(move);
+        game.moves = mergedMoves;
 
         await game.save();
 
         // notify other player
-        io.emit("game-updated", game);
-        res.json(game);
+        io.emit("game-updated", {
+            ...game.toJSON(), 
+            board
+        });
+
+        res.json({...game.toJSON(), board});
     } catch (error) {
         console.error(`Error updating game with ID ${req.params.id}:`, error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-function createBoard(dimensions: number) {
+type Move = {
+    player: number;
+    move: [number, number];
+};
+
+function createBoard(dimensions: number, moves?: Array<Move>) {
     const board: Board = [];
     for (let i = 0; i < dimensions; i++) {
         board[i] = [];
         for (let j = 0; j < dimensions; j++) {
-            board[i][j] = 0;
+            let token;
+            // if [i, j] is in moves array, set board[i][j] to player number
+            if (
+                moves?.find((move) => {
+                    token = move.player === 1 ? 1 : -1;
+                    return move.move[0] === i && move.move[1] === j;
+                })
+            ) {
+                board[i][j] = token || 0;
+            } else {
+                board[i][j] = 0;
+            }
         }
     }
     // Sequelize will serialize the board object into a string
-    return board as unknown as string;
+    return board;
 }
 
 function checkIsInvalid(
@@ -109,8 +151,8 @@ function checkIsInvalid(
 ) {
     if (currentPlayer !== game.currentPlayer) {
         return {
-            error: 'Not your turn!'
-        }
+            error: "Not your turn!",
+        };
     }
 
     let left = 0;
@@ -129,8 +171,8 @@ function checkIsInvalid(
         (direction === "right" && col !== right);
     if (isInvalidMove) {
         return {
-            error: 'Invalid move. No cheating!'
-        }
+            error: "Invalid move. No cheating!",
+        };
     }
 
     return false;
